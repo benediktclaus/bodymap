@@ -1,0 +1,17 @@
+Package: bodymap
+Type: Package
+Title: Body Maps For Plotting
+Version: 0.1.0
+Authors@R: 
+    person("Benedikt", "Claus", , "b.claus@pedscience.de", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-9501-0954"))
+Description: The bodymap package contains a body map useful for plotting 
+    frequencies or intensities regarding different body parts.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    sf

@@ -1,0 +1,44 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# bodymap
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of bodymap is to make plotting of body-related frequencies or intensities feasible.
+
+## Installation
+
+You can install the development version of bodymap like so:
+
+``` r
+remotes::install_github("benediktclaus/bodymap")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(bodymap)
+library(ggplot2)
+
+base_plot <- ggplot(bodymap) +
+    geom_sf()
+
+base_plot +
+    theme_void()
+```
