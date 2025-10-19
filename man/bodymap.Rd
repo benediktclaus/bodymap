@@ -3,24 +3,126 @@
 \docType{data}
 \name{bodymap}
 \alias{bodymap}
-\title{A Generic Body Map}
+\title{Body Region Map for Anatomical Visualizations}
 \format{
-An object of class \code{sf} (inherits from \code{data.frame}) with 14 rows and 4 columns.
+A simple features (sf) data frame with 14 rows and 3 variables:
+\describe{
+  \item{id}{Integer. Unique identifier for each body region following a
+    systematic coding scheme: IDs starting with \code{10xx} represent
+    anterior (front) view regions, while IDs starting with \code{20xx}
+    represent posterior (back) view regions. The last two digits further
+    differentiate regions within each view.}
+  \item{NAME}{Character. Name of the body region. Possible values are:
+    "Head", "Face", "Chest", "Belly", "Back", "Upper Right Limb",
+    "Upper Left Limb", "Lower Right Limb", "Lower Left Limb", and "Genitals".
+    Note that "Head" appears twice (front and back view) and "Back" appears
+    four times for different spinal regions.}
+  \item{SUBREGION}{Character. Anatomical subregion classification, primarily
+    used for the back/spine. Values include: \code{"Cervical"} (neck/upper spine),
+    \code{"Thoracic"} (mid-back), \code{"Lumbar"} (lower back), \code{"Sacrum"}
+    (pelvic region), or \code{NA} for regions without further subdivision.}
+  \item{geometry}{sfc_MULTIPOLYGON. Simple features geometry column containing
+    the spatial multipolygon data for each body region. Coordinate range:
+    x = [0, 95.8], y = [0, 150]. No coordinate reference system (CRS) is
+    defined as the coordinates are arbitrary and optimized for visualization.}
+}
+}
+\source{
+Body regions were manually digitized for visualization purposes.
 }
 \usage{
 bodymap
 }
 \description{
-A simple features data object for plotting body-related frequencies or
-intensities.
+A spatial dataset containing geometric representations of human body regions
+for creating anatomical visualizations. This dataset is designed to map
+frequencies, intensities, or other metrics to specific body parts, making it
+useful for medical visualizations, symptom mapping, or displaying regional
+data distributions.
 }
 \details{
-A simple features data frame with 10 rows and 4 columns:
-\describe{
-  \item{id}{Unique body part ID}
-  \item{NAME}{Body part Name}
-  \item{SUBREGION}{Body part subregion (currently just used for the back)}
-  \item{geometry}{Simploe features geometry column}
+The dataset uses the Simple Features (sf) standard and can be directly
+plotted using \code{ggplot2::geom_sf()}. Body regions are represented as
+multipolygons that can be styled, colored, or filled based on associated data.
+
+\strong{ID Structure:}
+The ID system provides information about the anatomical view:
+\itemize{
+  \item \strong{1xxx series}: Anterior (front) body regions
+  \item \strong{2xxx series}: Posterior (back) body regions
 }
+
+\strong{Anatomical Coverage:}
+The body map includes both anterior and posterior views. Some regions like
+"Head" appear in both views (IDs 1010 and 2010). The back is subdivided into
+four anatomically distinct spinal regions (cervical, thoracic, lumbar, sacrum)
+to allow for detailed visualization of spine-related data.
+
+\strong{Coordinate System:}
+The coordinate system is arbitrary and optimized for aesthetic visualization
+rather than anatomical precision. The body map provides a schematic
+representation suitable for data visualization purposes. No geographic CRS
+is defined.
 }
+\examples{
+library(ggplot2)
+library(sf)
+library(dplyr)
+
+# Basic visualization of all body regions
+ggplot(bodymap) +
+  geom_sf(fill = "lightblue", color = "black") +
+  theme_void()
+
+# Distinguish between front (1xxx) and back (2xxx) views
+bodymap |>
+  mutate(view = ifelse(id >= 2000, "Back", "Front")) |>
+  ggplot() +
+  geom_sf(aes(fill = view), color = "black") +
+  scale_fill_manual(values = c("Front" = "lightblue", "Back" = "lightcoral")) +
+  labs(fill = "View") +
+  theme_void()
+
+# Highlight spinal regions using SUBREGION
+ggplot(bodymap) +
+  geom_sf(aes(fill = SUBREGION), color = "black") +
+  scale_fill_brewer(palette = "Set2", na.value = "grey90") +
+  labs(fill = "Spinal\nRegion") +
+  theme_void()
+
+# Example: Map pain frequencies to body regions
+# Using id for precise mapping to avoid ambiguity with duplicate names
+pain_data <- data.frame(
+  id = c(1010, 1030, 2051, 2052, 1040),  # Head(front), Chest, Thoracic, Lumbar, Upper Right Limb
+  intensity = c(0.7, 0.9, 0.6, 0.8, 0.4)
+)
+
+bodymap_with_data <- bodymap |>
+  left_join(pain_data, by = "id")
+
+ggplot(bodymap_with_data) +
+  geom_sf(aes(fill = intensity), color = "black") +
+  scale_fill_gradient(low = "white", high = "red", na.value = "grey95",
+                      limits = c(0, 1)) +
+  labs(fill = "Pain\nIntensity",
+       title = "Regional Pain Distribution") +
+  theme_void()
+
+# Example: Aggregate by region name (combining front/back when applicable)
+symptom_by_name <- data.frame(
+  NAME = c("Head", "Chest", "Back"),
+  frequency = c(0.8, 0.6, 0.5)
+)
+
+bodymap |>
+  left_join(symptom_by_name, by = "NAME") |>
+  ggplot() +
+  geom_sf(aes(fill = frequency), color = "black") +
+  scale_fill_gradient(low = "white", high = "darkblue", na.value = "grey95") +
+  labs(fill = "Frequency") +
+  theme_void()
+
+}
+\keyword{anatomy}
 \keyword{datasets}
+\keyword{spatial}
