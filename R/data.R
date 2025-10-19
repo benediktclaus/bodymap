@@ -54,7 +54,7 @@
 #' is defined.
 #'
 #' @examples
-#' library(ggplot2)
+#' \dontrun{library(ggplot2)
 #' library(sf)
 #' library(dplyr)
 #'
@@ -110,6 +110,7 @@
 #'   scale_fill_gradient(low = "white", high = "darkblue", na.value = "grey95") +
 #'   labs(fill = "Frequency") +
 #'   theme_void()
+#' }
 #'
 #' @source
 #' Body regions were manually digitized for visualization purposes.

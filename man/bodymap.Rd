@@ -65,7 +65,7 @@ representation suitable for data visualization purposes. No geographic CRS
 is defined.
 }
 \examples{
-library(ggplot2)
+\dontrun{library(ggplot2)
 library(sf)
 library(dplyr)
 
@@ -121,6 +121,7 @@ bodymap |>
   scale_fill_gradient(low = "white", high = "darkblue", na.value = "grey95") +
   labs(fill = "Frequency") +
   theme_void()
+}
 
 }
 \keyword{anatomy}
