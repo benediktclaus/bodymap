@@ -3,42 +3,171 @@ output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  dpi = 300,
+  fig.width = 8,
+  fig.height = 6
 )
 ```
 
-# bodymap
+# bodymap <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/benediktclaus/bodymap/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/benediktclaus/bodymap/actions/workflows/R-CMD-check.yaml)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 <!-- badges: end -->
 
-The goal of bodymap is to make plotting of body-related frequencies or intensities feasible.
+## Overview
+
+**bodymap** provides a simple and intuitive way to visualize body-related data in R. Whether you're mapping symptom frequencies, pain intensities, or regional distributions in medical research, bodymap makes it easy to create clear and professional anatomical visualizations using the familiar `ggplot2` syntax.
+
+### Key Features
+
+- 📊 **Ready-to-use body region dataset** with 14 anatomical regions
+- 🎨 **Seamless ggplot2 integration** via `geom_sf()`
+- 🔍 **Detailed anatomical coverage** including front/back views and spinal subdivisions
+- 🏥 **Perfect for medical visualizations** such as symptom mapping, pain distribution, or injury patterns
+- 📦 **Lightweight**: No functions, just clean spatial data
 
 ## Installation
 
-You can install the development version of bodymap like so:
+### From GitHub
 
-``` r
-remotes::install_github("benediktclaus/bodymap")
+You can install the development version of bodymap from GitHub:
+```{r, eval = FALSE}
+# install.packages("pak")
+pak::pak("benediktclaus/bodymap")
 ```
 
-## Example
+### From R-universe
 
-This is a basic example which shows you how to solve a common problem:
+Or install from my R-universe repository:
+```{r, eval = FALSE}
+# Enable repository
+options(repos = c(
+  benediktclaus = 'https://benediktclaus.r-universe.dev',
+  CRAN = 'https://cloud.r-project.org'
+))
 
-```{r example}
+# Install bodymap
+install.packages('bodymap')
+```
+
+## Quick Start
+```{r example-basic}
 library(bodymap)
 library(ggplot2)
 
-base_plot <- ggplot(bodymap) +
-    geom_sf()
-
-base_plot +
-    theme_void()
+# Create a simple body map visualization
+ggplot(bodymap) +
+  geom_sf(fill = "lightblue", color = "black") +
+  theme_void()
 ```
+
+## Examples
+
+### Distinguish Between Front and Back Views
+```{r example-views}
+library(dplyr)
+
+bodymap |>
+  mutate(view = ifelse(id >= 2000, "Back", "Front")) |>
+  ggplot() +
+  geom_sf(aes(fill = view), color = "black") +
+  scale_fill_manual(values = c("Front" = "lightblue", "Back" = "lightcoral")) +
+  labs(fill = "View") +
+  theme_void()
+```
+
+### Highlight Spinal Regions
+```{r example-spine}
+library(rcartocolor)
+
+ggplot(bodymap) +
+  geom_sf(aes(fill = SUBREGION), color = "black") +
+  scale_fill_carto_d(palette = "Safe", na.value = "grey90") +
+  labs(fill = "Spinal Region") +
+  theme_void()
+```
+
+### Map Pain Intensity Data
+```{r example-pain}
+# Create example pain data
+pain_data <- data.frame(
+  id = c(1010, 1030, 2051, 2052, 1040),
+  intensity = c(0.7, 0.9, 0.6, 0.8, 0.4)
+)
+
+# Join with bodymap and visualize
+bodymap |>
+  left_join(pain_data, by = "id") |>
+  ggplot() +
+  geom_sf(aes(fill = intensity), color = "black") +
+  scale_fill_carto_c(palette = "OrYel", na.value = "grey95", limits = c(0, 1)) +
+  labs(fill = "Pain Intensity") +
+  theme_void()
+```
+
+### Aggregate by Region Name
+
+When you want to map the same value to all instances of a region (e.g., all "Back" subdivisions):
+```{r example-aggregate}
+# Symptom frequencies by region name
+symptom_by_name <- data.frame(
+  NAME = c("Head", "Chest", "Back"),
+  frequency = c(0.8, 0.6, 0.5)
+)
+
+bodymap |>
+  left_join(symptom_by_name, by = "NAME") |>
+  ggplot() +
+  geom_sf(aes(fill = frequency), color = "black") +
+  scale_fill_carto_c(palette = "Purp", na.value = "grey95") +
+  labs(fill = "Frequency") +
+  theme_void()
+```
+
+## Dataset Structure
+
+The `bodymap` dataset contains 14 body region polygons with the following variables:
+
+- **id**: Unique identifier (10xx = front, 20xx = back)
+- **NAME**: Body region name (Head, Face, Chest, Belly, Back, Upper/Lower Limbs, Genitals)
+- **SUBREGION**: Spinal subdivisions (Cervical, Thoracic, Lumbar, Sacrum) where applicable
+- **geometry**: Spatial multipolygon data (sf format)
+```{r dataset-preview}
+bodymap
+```
+
+## Use Cases
+
+- 🏥 **Clinical research**: Visualize symptom distributions, pain patterns, or injury locations
+- 📊 **Medical surveys**: Display body-related questionnaire results
+- 🔬 **Epidemiology**: Map disease prevalence across body regions
+- 💊 **Pharmacology**: Show drug efficacy or side effect locations
+- 🏋️ **Sports medicine**: Illustrate injury patterns or training focus areas
+
+## Getting Help
+
+If you encounter a bug or have a feature request, please [open an issue](https://github.com/benediktclaus/bodymap/issues) on GitHub.
+
+## License
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html) for more details.
+
+## Acknowledgments
+
+Body regions were manually digitized for visualization purposes. This package builds on the excellent [sf](https://r-spatial.github.io/sf/) and [ggplot2](https://ggplot2.tidyverse.org/) packages.
+
+---
+
+**Author**: Benedikt Claus  
+**GitHub**: [@benediktclaus](https://github.com/benediktclaus)
